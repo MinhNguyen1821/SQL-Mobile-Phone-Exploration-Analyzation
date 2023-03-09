@@ -1,0 +1,370 @@
+-- Create a database named "Mobile Phones"
+create database MobilePhones
+
+-- Use database MobilePhones
+use [MobilePhones]
+
+-- Create the table name "Mobile_Phone_Infor"
+create table Mobile_Phone_Infor
+(
+	ID varchar(10),
+	names varchar(100),
+	stars varchar(100),
+	ratings varchar(100),
+	reviews varchar(100),
+	price varchar(100),
+	ram varchar(100),
+	rom varchar(100),
+	camara_info varchar(200),
+	display varchar(200),
+	battery varchar(200),
+	processor varchar(200),
+	warranty varchar(200)
+)
+
+-- Find out values that are null, blank, or special characters of some columns, then handle these values:
+--Column 'Names'
+select
+	[names]
+from 
+	[dbo].[Mobile_Phone_Infor]
+where
+	[names] is Null
+	or LTRIM(RTRIM([names]))='' --Column 'Names' does not include these values.
+
+-- Column 'stars'
+select
+	[stars]
+from 
+	[dbo].[Mobile_Phone_Infor]
+where
+	[stars] is Null
+	or LTRIM(RTRIM([stars]))=''
+	or [stars] like '%[a-Z]%' -- Column 'stars' does not include these values. 
+
+-- Column 'ratings'
+select
+	[ratings]
+from 
+	[dbo].[Mobile_Phone_Infor]
+where
+	[ratings] is Null
+	or LTRIM(RTRIM([ratings]))='' 
+	or [ratings] like '%[a-Z]%'    -- Column 'ratings' includes some invalid values. So I need to handle them. These values are converted to 0.
+update 
+	[dbo].[Mobile_Phone_Infor]
+set 
+	[ratings]= 0
+where
+	[ratings] like '%[a-Z]%'
+
+--Column 'reviews'
+select
+	[reviews]
+from 
+	[dbo].[Mobile_Phone_Infor]
+where
+	[reviews] is Null
+	or LTRIM(RTRIM([reviews]))='' 
+	or [reviews] like '%[a-Z]%' -- Column 'reviews' includes some invalid values. So I need to handle them. These values are converted to 0.
+update
+	[dbo].[Mobile_Phone_Infor]
+set 
+	[reviews]=0
+where
+	[reviews] like '%[a-Z]%'
+
+--Column 'price'
+select
+	[price]
+from 
+	[dbo].[Mobile_Phone_Infor]
+where
+	[price] is Null
+	or LTRIM(RTRIM([price]))='' 
+	or [price] like '%[a-Z]%' -- Column 'price' includes some invalid values. So I need to handle them. These values are converted to 0.
+update
+	[dbo].[Mobile_Phone_Infor]
+set 
+	[price]=0
+where
+	[price] like '%[a-Z]%'
+
+--Column 'ram'
+select
+	[ram]
+from 
+	[dbo].[Mobile_Phone_Infor]
+where 
+	[ram] is Null
+	or LTRIM(RTRIM([ram]))='' 
+	or [ram] like '%[a-Z]%' -- Column 'ram' includes some invalid values. So I need to handle them. These values are converted to 0.
+update
+	[dbo].[Mobile_Phone_Infor]
+set 
+	[ram]=0
+where
+	[ram] like '%[a-Z]%'
+
+--Column 'rom'
+select
+	[rom]
+from 
+	[dbo].[Mobile_Phone_Infor]
+where 
+	[rom] is Null
+	or LTRIM(RTRIM([rom]))='' 
+	or [rom] like '%[a-Z]%' -- Column 'rom' includes some invalid values. So I need to handle them. These values are converted to 0.
+update
+	[dbo].[Mobile_Phone_Infor]
+set 
+	[rom]=0
+where
+	[rom] like '%[a-Z]%'
+	or LTRIM(RTRIM([rom]))=''
+
+-- Adjust the type data of some columns:
+-- Column "ID"
+alter table
+	[dbo].[Mobile_Phone_Infor]
+alter column
+	[ID] int 
+
+-- Column "stars"
+Alter table
+	[dbo].[Mobile_Phone_Infor]
+Alter column
+	[stars] float 
+
+-- Column "ratings"
+Alter table
+	[dbo].[Mobile_Phone_Infor]
+Alter column
+	[ratings] int 
+
+-- Column 'reviews'
+Alter table
+	[dbo].[Mobile_Phone_Infor]
+Alter column
+	[reviews] int
+
+-- Column 'price'
+Alter table
+	[dbo].[Mobile_Phone_Infor]
+Alter column
+	 [price] float
+
+-- Column 'ram'
+Alter table
+	[dbo].[Mobile_Phone_Infor]
+Alter column
+	 [ram] float
+
+-- Column 'rom'
+Alter table
+	[dbo].[Mobile_Phone_Infor]
+Alter column
+	 [rom] float
+
+/* 
+Data Exploration
+
+*/
+select *
+from
+	[dbo].[Mobile_Phone_Infor]
+order by
+	1
+
+-- Select data that we are going to be starting with
+select
+	[ID],
+	[names],
+	[stars],
+	[ratings],
+	[reviews],
+	[price],
+	[ram],
+	[rom]
+from 
+	[dbo].[Mobile_Phone_Infor]
+order by
+	1
+
+-- Total cell phones 
+select
+	COUNT(distinct[names]) as 'total_cell_phones'
+from
+	[dbo].[Mobile_Phone_Infor]
+
+
+-- Number of cell phones following 'stars'
+select
+	COUNT(distinct[names]) as 'total_cell_phones',
+	[stars]
+from
+	[dbo].[Mobile_Phone_Infor]
+where
+	[stars]<>0
+group by
+	[stars]
+order by
+	[stars] desc
+
+-- Cell phones belong to top 3 highest stars 
+with top_3_stars as
+(
+	select
+		distinct
+		top(3) [stars] as 'stars'
+	from
+		[dbo].[Mobile_Phone_Infor]
+	order by
+		[stars] desc
+), mobile_phones_corresponding_top_3_highest_stars as
+(
+	select
+		distinct
+		[names],
+		[price],
+		top_3_stars.[stars],
+		[ratings],
+		[reviews],
+		[ram],
+		[rom],
+		[camara_info],
+		[display],
+		[battery],
+		[warranty]
+	from
+		[dbo].[Mobile_Phone_Infor]
+		join top_3_stars on [dbo].[Mobile_Phone_Infor].[stars]=top_3_stars.stars
+)
+select *
+from
+	mobile_phones_corresponding_top_3_highest_stars
+where
+	[price]<>0
+order by
+	[stars] desc,
+	[price] desc
+
+-- Cell phones belong to top 10 highest ratings
+select
+	distinct
+	[names],
+	[ratings],
+	[price],
+	[stars],
+	[reviews],
+	[ram],
+	[rom],
+	[camara_info],
+	[display],
+	[battery],
+	[processor],
+	[warranty]
+from
+	[dbo].[Mobile_Phone_Infor]
+where
+	[ratings] in (select
+					distinct
+					top(10) ([ratings])
+				from
+					[dbo].[Mobile_Phone_Infor]
+				order by
+					[ratings] desc
+	)
+	and [price]<>0
+	and [ratings]<>0
+order by
+	[ratings] desc,
+	[price] desc
+
+-- Cell phones belong to top 10 highest reviews
+select
+	distinct
+	[names],
+	[price],
+	[ram],
+	[reviews],
+	[stars],
+	[ratings],
+	[rom],
+	[camara_info],
+	[display],
+	[battery],
+	[processor],
+	[warranty]
+from
+	[dbo].[Mobile_Phone_Infor]
+where
+	[reviews] in (select
+						distinct
+						top(10) [reviews]
+					from
+						[dbo].[Mobile_Phone_Infor]
+					order by
+						[reviews] desc
+	)
+	and [reviews]<>0
+order by
+	[reviews] desc,
+	[price] desc
+
+-- Cell phones belong to the top 10 highest price
+select
+	distinct
+	[names],
+	[price],
+	[stars],
+	[ratings],
+	[reviews],
+	[ram],
+	[rom],
+	[camara_info],
+	[display],
+	[battery],
+	[processor],
+	[warranty]
+from
+	[dbo].[Mobile_Phone_Infor]
+where
+	[price] in (
+			select
+				top(10) [price]
+			from
+				[dbo].[Mobile_Phone_Infor]
+			order by
+				[price] desc
+	)
+	and [price]<>0
+order by
+	[price] desc
+
+-- The number of mobile phones of each phone company
+with phone_companies as
+(
+	select
+		Case 
+			When [names] like '%samsung%' then 'samsung'
+			When [names] like '%apple%' then 'apple'
+			When [names] like '%oppo%' then 'oppo'
+			When [names] like '%realme%' then 'realme'
+			When [names] like '%huawei%' then 'realme'
+			When [names] like '%nokia%' then 'nokia'
+			When [names] like '%xiaomi%' then 'xiaomi'
+			When [names] like '%vivo%' then 'vivo'
+			When [names] like '%sony%' then 'sony'
+		Else 'Others'
+		End as 'phone_company'
+	from
+		[dbo].[Mobile_Phone_Infor]
+)
+select
+	phone_company,
+	COUNT(phone_company) as 'number_phone_company'
+from	
+	phone_companies
+group by
+	phone_company
